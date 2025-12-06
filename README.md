@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**Privacy-first RAG system running on local hardware (RTX 2070 optimized). Combines Gemma 3 (4b) for reasoning and Llama 3.2 Vision for image analysis.**
+**Privacy-first RAG system running on local hardware (RTX 2070 laptop optimized). Combines Gemma 3 (4b) for reasoning and Llama 3.2 Vision for image analysis.**
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io/)
