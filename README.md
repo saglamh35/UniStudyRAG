@@ -58,7 +58,10 @@ Advanced prompting strategy that:
 ChatGPT-style streaming interface with real-time word-by-word response generation for a smooth user experience.
 
 ### 🪟 Windows Optimized
-Special handling for Windows file locking issues with ChromaDB, ensuring smooth operation on Windows systems.
+Special handling for Windows file locking issues:
+- ChromaDB file locking fixes with proper resource cleanup
+- Temporary file handling with explicit close operations
+- Memory management and garbage collection for stable operation
 
 ---
 

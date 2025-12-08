@@ -163,15 +163,21 @@ class PDFIngestionService:
         try:
             # Resmi base64'e çevir
             buffered = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-            image.save(buffered, format="PNG")
-            buffered.seek(0)
-            
-            # Base64 encoding
-            with open(buffered.name, "rb") as img_file:
-                img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-            
-            # Geçici dosyayı sil
-            os.unlink(buffered.name)
+            try:
+                image.save(buffered, format="PNG")
+                buffered.flush()  # Ensure all data is written
+                buffered.close()  # Close file handle before unlinking (Windows compatibility)
+                
+                # Base64 encoding
+                with open(buffered.name, "rb") as img_file:
+                    img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+            finally:
+                # Geçici dosyayı sil (Windows'ta dosya kapatıldıktan sonra)
+                if os.path.exists(buffered.name):
+                    try:
+                        os.unlink(buffered.name)
+                    except OSError:
+                        pass  # Ignore if file is already deleted
             
             # Ollama API'ye istek gönder (Güçlendirilmiş prompt)
             prompt = Config.get_vision_prompt()
