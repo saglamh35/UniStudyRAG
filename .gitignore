@@ -47,6 +47,9 @@ chroma_db/
 *.sqlite
 *.sqlite3
 
+# Smart Cache (Local - should not be committed)
+cache_data/
+
 # PDF Files (Copyright - should not be committed)
 data/*.pdf
 data/**/*.pdf

@@ -20,6 +20,9 @@ chromadb>=0.4.15
 # HTTP Requests
 requests>=2.31.0
 
+# Configuration Management
+python-dotenv>=1.0.0
+
 # Standard Library (included in Python, listed for reference)
 # os, shutil, tempfile, base64, pathlib, typing
 

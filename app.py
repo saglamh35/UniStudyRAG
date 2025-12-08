@@ -6,6 +6,7 @@ Modern ve kullanıcı dostu chat arayüzü
 import streamlit as st
 from pathlib import Path
 from rag_engine import RAGManager
+from config import Config
 
 # Sayfa yapılandırması
 st.set_page_config(
@@ -36,17 +37,14 @@ st.markdown("""
 def get_rag_manager():
     """
     RAGManager'ı cache'ler (her tıklamada yeniden yüklenmesin).
+    Config'den değerleri otomatik alır.
     
     Returns:
         RAGManager: RAG yöneticisi nesnesi
     """
     return RAGManager(
-        model_name="gemma3:4b",
-        embed_model_name="nomic-embed-text",
-        ollama_base_url="http://localhost:11434",
-        chunk_size=1000,
-        chunk_overlap=200,
-        k_retrieval=5
+        # Tüm parametreler None olduğu için Config'den otomatik alınacak
+        # İsterseniz burada override edebilirsiniz
     )
 
 
@@ -104,8 +102,8 @@ def process_uploaded_files(uploaded_files, rag_manager: RAGManager):
                 
                 # Vectorstore oluştur
                 with st.spinner("💾 Vektör veritabanı oluşturuluyor (bu biraz zaman alabilir)..."):
-                    # Kalıcı klasör kullan
-                    chroma_db_dir = Path("chroma_db")
+                    # Kalıcı klasör kullan (Config'den al)
+                    chroma_db_dir = Config.CHROMA_DB_DIR
                     rag_manager.build_vectorstore(chunks, persist_directory=chroma_db_dir)
                     st.session_state.vectorstore_ready = True
                     st.session_state.uploaded_files = list(current_file_names)

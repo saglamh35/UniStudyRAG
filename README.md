@@ -15,31 +15,50 @@
 
 ## 🚀 Key Features
 
+### 🏗️ Layered Architecture
+Modern, modular design with separation of concerns:
+- **Configuration Management** (`config.py`) - Centralized settings with `.env` support
+- **Ingestion Layer** (`modules/ingestion.py`) - PDF processing, Vision integration, and chunking
+- **Vector Store Layer** (`modules/vectorstore.py`) - ChromaDB management and retrieval
+- **LLM Engine** (`modules/llm_engine.py`) - Language model orchestration
+- **Utilities** (`utils.py`) - Centralized logging
+
 ### 🧠 Hybrid Architecture
 Vision + Text pipeline that processes both textual content and visual elements (diagrams, charts, schematics) from PDF documents.
 
 ### 🔒 100% Local & Private
 Runs completely offline using Ollama. Your documents never leave your machine. Perfect for sensitive academic materials and confidential research papers.
 
-### 👁️ Multimodal RAG
-Understands and analyzes:
-- Text content from PDFs
-- Diagrams and flowcharts
-- Mathematical equations and formulas
-- Tables and structured data
-- Technical schematics
+### 👁️ Multimodal RAG with Aggressive OCR
+Advanced vision processing that:
+- **Extracts ALL text** including headers, titles, university names, course codes
+- **Analyzes diagrams** with detailed node, arrow, and connection descriptions
+- **Transcribes formulas** and mathematical expressions
+- Uses **two-phase analysis** (OCR + Visual Description) for maximum accuracy
 
 ### ⚡ Smart Retrieval
 Uses **MMR (Maximal Marginal Relevance)** algorithm to reduce retrieval bias. Ensures diverse context retrieval from different parts of documents, preventing the system from focusing only on similar chunks.
 
-### 🗣️ Multilingual Chain-of-Thought
+### 💾 Smart Caching System
+Intelligent caching mechanism that:
+- Caches processed PDFs using MD5 hash
+- Skips Vision processing on cache hits (dramatically faster)
+- Automatically invalidates when PDFs change
+- Reduces processing time for repeated document uploads
+
+### 🗣️ Elite Multilingual Chain-of-Thought
 Advanced prompting strategy that:
 - Handles German/English documents with Turkish (or any language) answers
 - Distinguishes between document owners and references (critical for CVs and academic papers)
 - Maintains technical terminology in original language while translating explanations
+- Direct, concise answers without unnecessary processing steps
+- Prioritizes OCR-extracted content for accurate document understanding
 
 ### 💬 Streaming Responses
 ChatGPT-style streaming interface with real-time word-by-word response generation for a smooth user experience.
+
+### 🪟 Windows Optimized
+Special handling for Windows file locking issues with ChromaDB, ensuring smooth operation on Windows systems.
 
 ---
 
@@ -96,7 +115,34 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Install Ollama Models
+### 4. Configure Environment (Optional)
+
+Create a `.env` file in the project root to customize settings:
+
+```env
+# Model Ayarları
+LLM_MODEL_NAME=gemma3:4b
+VISION_MODEL_NAME=llama3.2-vision
+EMBED_MODEL_NAME=nomic-embed-text
+OLLAMA_BASE_URL=http://localhost:11434
+
+# RAG Ayarları
+CHUNK_SIZE=600
+CHUNK_OVERLAP=150
+RETRIEVAL_K=8
+
+# Vision Ayarı
+ENABLE_VISION=true
+
+# Path Ayarları (Optional)
+CACHE_DIR=cache_data
+CHROMA_DB_DIR=chroma_db
+DATA_DIR=data
+```
+
+**Note:** If `.env` is not provided, default values from `config.py` will be used.
+
+### 5. Install Ollama Models
 
 ```bash
 # Pull the required models
@@ -144,13 +190,22 @@ The application will open in your default browser at `http://localhost:8501`
 ```
 UniStudyRAG/
 ├── app.py                 # Streamlit web interface
-├── rag_engine.py         # Core RAG logic (multimodal processing)
+├── rag_engine.py         # Core RAG manager (orchestrates modules)
 ├── main.py               # CLI version (alternative interface)
+├── config.py             # Configuration management (.env support)
+├── utils.py              # Centralized logging utilities
+├── modules/              # Layered architecture modules
+│   ├── __init__.py
+│   ├── ingestion.py      # PDF loading, Vision, Chunking
+│   ├── vectorstore.py    # ChromaDB, Embeddings, Retriever
+│   └── llm_engine.py     # LLM orchestration, System Prompt
 ├── requirements.txt      # Python dependencies
+├── .env                  # Environment variables (create from template)
 ├── .gitignore           # Git ignore rules
 ├── README.md            # This file
 ├── data/                # PDF storage (gitignored)
-└── chroma_db/          # Vector database (gitignored)
+├── chroma_db/           # Vector database (gitignored)
+└── cache_data/           # Smart cache storage (gitignored)
 ```
 
 ---
@@ -158,23 +213,27 @@ UniStudyRAG/
 ## 🔍 How It Works
 
 ### 1. Document Processing
-- PDFs are loaded and split into manageable chunks
+- PDFs are loaded and split into manageable chunks (600 chars with 150 overlap)
+- **Smart Caching:** MD5 hash check - if PDF was processed before, loads from cache instantly
 - Each page is converted to an image
-- Vision model analyzes images for diagrams, charts, and visual content
-- Text and visual analysis are combined into enriched documents
+- **Aggressive OCR:** Vision model extracts ALL text (headers, titles, university names, course codes)
+- **Two-Phase Analysis:** OCR extraction + Visual description for maximum detail
+- Text and visual analysis are combined into enriched documents with structured format
 
 ### 2. Vectorization
 - Documents are embedded using Nomic Embed Text
 - Embeddings are stored in ChromaDB for fast similarity search
 
 ### 3. Retrieval
-- MMR algorithm retrieves diverse, relevant chunks
+- MMR algorithm retrieves diverse, relevant chunks (k=8 for better context)
 - Reduces bias by selecting from different document sections
 - Ensures comprehensive context coverage
+- Prioritizes OCR-extracted content for accurate answers
 
 ### 4. Generation
-- Gemma 3 generates responses using retrieved context
-- Chain-of-Thought prompting ensures accurate, multilingual answers
+- Gemma 3 generates responses using retrieved context (4096 token window)
+- Elite Chain-of-Thought prompting ensures direct, accurate, multilingual answers
+- System prompt prioritizes OCR blocks for document understanding
 - Streaming interface provides real-time feedback
 
 ---
@@ -182,21 +241,32 @@ UniStudyRAG/
 ## 🎨 Features in Detail
 
 ### Multimodal Processing
-The system doesn't just read text—it understands visual content:
-- **Diagrams:** Extracts structure and relationships
-- **Charts:** Reads data and trends
-- **Formulas:** Captures mathematical expressions
-- **Tables:** Understands structured information
+The system doesn't just read text—it understands visual content with aggressive OCR:
+- **Text Extraction:** ALL visible text including headers, titles, university names, course codes
+- **Diagrams:** Extracts structure, nodes, arrows, labels, and connections with flow explanation
+- **Charts:** Reads data, trends, axis labels, and visual hierarchy
+- **Formulas:** Transcribes mathematical expressions exactly
+- **Tables:** Understands structured information and relationships
+- **Two-Phase Output:** Structured OCR blocks + Visual descriptions for maximum accuracy
 
 ### Smart Context Management
 - **4096 token context window** for handling long documents
 - **MMR retrieval** prevents over-reliance on similar chunks
 - **Metadata preservation** tracks source files and page numbers
+- **Optimized chunking** (600 chars, 150 overlap) for focused retrieval
+- **Enhanced retrieval** (k=8) for better context coverage
 
 ### Privacy & Security
 - **100% local processing** - no data sent to external APIs
 - **Offline operation** - works without internet after setup
 - **No telemetry** - completely private
+- **Smart caching** - processed documents cached locally for faster re-processing
+
+### Performance Optimizations
+- **Smart Caching:** MD5-based cache system skips Vision processing on cache hits
+- **Windows Compatibility:** Special handling for file locking issues
+- **Memory Management:** Garbage collection and resource cleanup
+- **Modular Architecture:** Easy to extend and maintain
 
 ---
 
