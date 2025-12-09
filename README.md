@@ -46,13 +46,16 @@ Intelligent caching mechanism that:
 - Automatically invalidates when PDFs change
 - Reduces processing time for repeated document uploads
 
-### 🗣️ Elite Multilingual Chain-of-Thought
-Advanced prompting strategy that:
-- Handles German/English documents with Turkish (or any language) answers
-- Distinguishes between document owners and references (critical for CVs and academic papers)
-- Maintains technical terminology in original language while translating explanations
-- Direct, concise answers without unnecessary processing steps
-- Prioritizes OCR-extracted content for accurate document understanding
+### 🗣️ Advanced Prompting System with Source Citation
+Intelligent prompting strategy that:
+- **Context-Only Responses:** Uses ONLY information from provided context, never hallucinates
+- **Source Labeling:** Automatically labels context blocks as [KAYNAK 1], [KAYNAK 2], etc.
+- **Automatic Citation:** Adds source references at the end of responses (e.g., "Kaynaklar: KAYNAK 1, KAYNAK 3")
+- **Multilingual Support:** Answers in the same language as the question (Turkish, English, German)
+- **Structured Format:** Provides direct 1-2 sentence answers followed by 3-7 bullet points
+- **Honest Uncertainty:** Clearly states when information is missing from context
+- **Technical Term Preservation:** Maintains original terminology while translating explanations
+- **OCR Priority:** Prioritizes OCR-extracted content for accurate document understanding
 
 ### 💬 Streaming Responses
 ChatGPT-style streaming interface with real-time word-by-word response generation for a smooth user experience.
@@ -234,8 +237,14 @@ UniStudyRAG/
 - Prioritizes OCR-extracted content for accurate answers
 
 ### 4. Generation
+- Context blocks are labeled with source tags ([KAYNAK 1], [KAYNAK 2], etc.)
 - Gemma 3 generates responses using retrieved context (4096 token window)
-- Elite Chain-of-Thought prompting ensures direct, accurate, multilingual answers
+- Advanced prompting system ensures:
+  - Context-only responses (no hallucination)
+  - Automatic source citation at the end
+  - Multilingual answers matching question language
+  - Structured format (direct answer + bullet points)
+  - Honest uncertainty when information is missing
 - System prompt prioritizes OCR blocks for document understanding
 - Streaming interface provides real-time feedback
 

@@ -183,8 +183,9 @@ def chat_loop(retriever, llm: ChatOllama):
     print("="*60)
     print("Soru sormak için yazın. Çıkmak için 'q' veya 'quit' yazın.\n")
     
-    # Sistem promptu
-    system_prompt = """Sen üniversite öğrencilerine yardımcı olan bir asistansın. Aşağıdaki BAĞLAM (Context) bilgisini kullanarak soruyu cevapla. Bağlamda bilgi yoksa 'Bilgim yok' de, uydurma."""
+    # Sistem promptu (Config'den al)
+    from config import Config
+    system_prompt = Config.SYSTEM_PROMPT
     
     while True:
         # Kullanıcıdan soru al
@@ -228,8 +229,13 @@ def chat_loop(retriever, llm: ChatOllama):
                 print("=" * 60)
                 print()
             
-            # Dokümanları birleştir (context)
-            context = "\n\n".join([doc.page_content for doc in relevant_docs])
+            # Dokümanları kaynak etiketleriyle birleştir (context)
+            context_parts = []
+            for idx, doc in enumerate(relevant_docs, 1):
+                source_label = f"[KAYNAK {idx}]"
+                context_parts.append(f"{source_label}\n{doc.page_content}")
+            
+            context = "\n\n".join(context_parts)
             
             # Promptu hazırla
             prompt = f"""{system_prompt}

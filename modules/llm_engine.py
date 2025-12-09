@@ -95,8 +95,13 @@ class LLMEngine:
         
         logger.info(f"✅ {len(relevant_docs)} adet ilgili doküman bulundu")
         
-        # Dokümanları birleştir (context)
-        context = "\n\n".join([doc.page_content for doc in relevant_docs])
+        # Dokümanları kaynak etiketleriyle birleştir (context)
+        context_parts = []
+        for idx, doc in enumerate(relevant_docs, 1):
+            source_label = f"[KAYNAK {idx}]"
+            context_parts.append(f"{source_label}\n{doc.page_content}")
+        
+        context = "\n\n".join(context_parts)
         
         # Promptu hazırla
         prompt = f"""{self.system_prompt}
